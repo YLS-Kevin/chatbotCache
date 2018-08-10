@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yls.app.persistence.mapper.ClientCacheMapper">
+
+	<select id="findAllClientDialogType" resultType="clientDialogType">
+		select * from CLIENT_AND_DIALOG_TYPES;
+	</select>
+	
+	<select id="findAllDialogTypeV2" resultType="dialogType2">
+		select radt.id, radt.cid, radt.cid_m, radt.ctype, radt.id_dt, radt.sort, radt.create_by, radt.update_by
+		from robots r
+		left join robots_module rm
+		on r.id = rm.cid
+		right join ROBOTS_AND_DIALOG_TYPES radt
+		on rm.cid_m = radt.cid_m
+		where r.state = '1' and r.del_flag = '0' and rm.del_flag = '0';
+	</select>
+	
+	<select id="findAllDialogTypeSelfV2" resultType="dialogType2">
+		select r.id as cid, rm.cid_m, dt2.id as id_dt from robots r
+		left join robots_module rm
+		on r.id = rm.cid
+		right join (
+			select *
+			from DIALOG_TYPES dt
+			where dt.cid_m != '' and dt.cid_m is not null
+		) dt2
+		on rm.cid_m = dt2.cid_m
+		where r.state = '1' and r.del_flag = '0' and rm.del_flag = '0' and dt2.del_flag = '0';
+	</select>
+	
+	<select id="findDialogTypeById" resultType="dialogType2">
+		select * from ROBOTS_AND_DIALOG_TYPES radt
+		where radt.id = #{id};
+	</select>
+
+</mapper>

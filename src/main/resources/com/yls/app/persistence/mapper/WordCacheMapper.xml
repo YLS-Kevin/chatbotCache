@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yls.app.persistence.mapper.WordCacheMapper">
+	
+	<select id="findAllAccount" resultType="account">
+		SELECT * FROM account a;
+	</select>
+	
+	<select id="findAllWordTypeByAccountId" resultType="dWordGroup">
+		select DISTINCT group_name 
+		from DWORDGROUP dwg 
+		where dwg.id_ac = #{id} or dwg.id_ac = '1';
+	</select>
+	
+	<select id="findByAccountId" resultType="word">
+		select b.id, b.id_ac, b.wname, b.autoin, b.wften, b.wften2, b.wx, b.wx2, b.state, b.remarks 
+		from WORDS b
+		where b.autoin = 1 and b.id_ac = #{id};
+	</select>
+	
+	<select id="findAutoin" resultType="word">
+		select b.id, b.id_ac, b.wname, b.autoin, b.wften, b.wften2, b.wx, b.wx2, b.state, b.remarks 
+		from WORDS b
+		where b.autoin = 1;
+	</select>
+	
+	<select id="findAll" resultType="word">
+		select w.id, w.id_ac, w.wname, w.wx, w.wx2, w.wften, w.wften2, w.autoin 
+		from WORDS w
+	</select>
+	
+	<select id="findCoreWords" resultType="word">
+		select a.id, a.id_ac, a.wname, a.autoin, a.wften, a.wften2, a.wx, a.wx2, a.state, a.remarks from 
+		(select * from WORDS w where w.autoin = 2) a
+		left outer join 
+		(select * from WORDS w where w.autoin = 1) b 
+		on a.wname = b.wname 
+		where b.id is null and a.state = 1;
+	</select>
+	
+	<select id="findUserWords" resultType="word">
+		select b.id, b.id_ac, b.wname, b.autoin, b.wften, b.wften2, b.wx, b.wx2, b.state, b.remarks from 
+		(select * from WORDS w where w.autoin = 2) a
+		right outer join 
+		(select * from WORDS w where w.autoin = 1) b 
+		on a.wname = b.wname 
+		where a.id is null and b.state = 1;
+	</select>
+	
+	<select id="findCommonWords" resultType="word">
+		select a.id, a.id_ac, a.wname, a.autoin, a.wften, a.wften2, a.wx, a.wx2, a.state, a.remarks from 
+		(select * from WORDS w where w.autoin = 2) a
+		inner join 
+		(select * from WORDS w where w.autoin = 1) b 
+		on a.wname = b.wname
+		where a.state = 1;
+	</select>
+	
+</mapper>

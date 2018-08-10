@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <settings>
+        <setting name="lazyLoadingEnabled" value="false"/>
+    </settings>
+
+    <typeAliases>
+    	<typeAlias type="com.yls.app.entity.TerminalDialogStatic" alias="terminalDialogStatic"/>
+        <typeAlias type="com.yls.app.entity.TerminalDialogInter" alias="terminalDialogInter"/>
+        <typeAlias type="com.yls.app.entity.TerminalDialogMore" alias="terminalDialogMore"/>
+        <typeAlias type="com.yls.app.entity.DialogCache" alias="dialogCache"/>
+        <typeAlias type="com.yls.app.entity.DialogStatic" alias="dialogStatic"/>
+        <typeAlias type="com.yls.app.entity.DialogInter" alias="dialogInter"/>
+        <typeAlias type="com.yls.app.entity.DialogMore" alias="dialogMore"/>
+        <typeAlias type="com.yls.app.entity.Dialog" alias="dialog"/>
+        <typeAlias type="com.yls.app.entity.Client" alias="client"/>
+        <typeAlias type="com.yls.app.entity.Word" alias="word"/>
+        <typeAlias type="com.yls.app.entity.Account" alias="account"/>
+        <typeAlias type="com.yls.app.entity.DialogType" alias="dialogType"/>
+        <typeAlias type="com.yls.app.entity.ClientDialogType" alias="clientDialogType"/>
+        <typeAlias type="com.yls.app.entity.DialogExp" alias="dialogExp"/>
+        <typeAlias type="com.yls.app.entity.DialogMan" alias="dialogMan"/>
+        <typeAlias type="com.yls.app.entity.DWordGroup" alias="dWordGroup"/>
+        <typeAlias type="com.yls.app.entity.DialogMoreAndOne2" alias="dialogMoreAndOne2"/>
+        <typeAlias type="com.yls.app.entity.DialogType2" alias="dialogType2"/>
+       
+    </typeAliases>
+
+</configuration> 

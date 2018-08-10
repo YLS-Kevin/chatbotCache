@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yls.app.persistence.mapper.DialogCacheMapper">
+	
+	<select id="findDialogOneV2" resultType="dialogMoreAndOne2">
+		select * 
+		from (
+			select d.id as id, d.id_ac as id_ac, d.id_dt as id_dt, d.atype as atype, d.id_ap as id_ap, d.mul_dialog_type, d.cid_m_id_dt, d.is_contain_kw
+			from DIALOG d 
+			where (d.id_ap = '' or d.id_ap is null) and d.del_flag = 0 and d.state = 1
+		) d_dmo
+		left join (
+			select dm.id_d, dm.aptype, dm.aword, dm.awordnum, 
+						 aword1type, dm.aword1, aword1near, aword1dyna, aword1para,
+						 aword2type, dm.aword2, aword2near, aword2dyna, aword2para,
+						 aword3type, dm.aword3, aword3near, aword3dyna, aword3para,
+						 aword4type, dm.aword4, aword4near, aword4dyna, aword4para,
+						 aword5type, dm.aword5, aword5near, aword5dyna, aword5para
+			from DIALOG_MAN dm
+		) dm
+		on d_dmo.id = dm.id_d
+		left join (
+			select drs.id_d, drs.answer
+			from DIALOG_ROBOT_STATIC drs 
+			where drs.state = 1
+		) drs
+		on d_dmo.id = drs.id_d
+		left join (
+			select dri.id_d, id.url, id.urltest, id.is_front_call
+			from DIALOG_ROBOT_INTER dri 
+			left join INTER_DATA id 
+			on dri.id_di = id.id 
+			where id.state = 1
+		) dri_id 
+		on d_dmo.id = dri_id.id_d
+		left join (
+			select das.id_d, das.atype as das_atype, das.stype, das.repara, das.sin, das.sinword, das.scripts
+			from DIALOG_ANSWER_SCRIPT das 
+			where das.state=1
+		) das 
+		on d_dmo.id = das.id_d
+		where id_dt=#{0} and aptype=#{1}
+	</select>
+	
+	<select id="findDialogMoreV2" resultType="dialogMoreAndOne2">
+		select * 
+		from (
+			select d.id as id, d.id_ac as id_ac, d.id_dt as id_dt, d.atype as atype, d.id_ap as id_ap, dmo.tname as tname, d.mul_dialog_type, d.cid_m_id_dt, d.is_contain_kw
+			from DIALOG d 
+			left join DIALOG_MORE dmo 
+			on d.id_ap = dmo.id 
+			where d.id_ap != '' and d.id_ap is not null and d.del_flag = 0 and dmo.del_flag = 0 and d.state = 1 and dmo.state = 1
+		) d_dmo
+		left join (
+			select dm.id_d, dm.aptype, dm.aword, dm.awordnum, 
+						 aword1type, dm.aword1, aword1near, aword1dyna, aword1para,
+						 aword2type, dm.aword2, aword2near, aword2dyna, aword2para,
+						 aword3type, dm.aword3, aword3near, aword3dyna, aword3para,
+						 aword4type, dm.aword4, aword4near, aword4dyna, aword4para,
+						 aword5type, dm.aword5, aword5near, aword5dyna, aword5para
+			from DIALOG_MAN dm
+		) dm
+		on d_dmo.id = dm.id_d
+		left join (
+			select drs.id_d, drs.answer
+			from DIALOG_ROBOT_STATIC drs 
+			where drs.state = 1
+		) drs
+		on d_dmo.id = drs.id_d
+		left join (
+			select dri.id_d, id.url, id.urltest, id.is_front_call
+			from DIALOG_ROBOT_INTER dri 
+			left join INTER_DATA id 
+			on dri.id_di = id.id 
+			where id.state = 1
+		) dri_id 
+		on d_dmo.id = dri_id.id_d
+		left join (
+			select das.id_d, das.atype as das_atype, das.stype, das.repara, das.sin, das.sinword, das.scripts
+			from DIALOG_ANSWER_SCRIPT das 
+			where das.state=1
+		) das 
+		on d_dmo.id = das.id_d
+		where id_dt=#{0} and aptype=#{1}
+	</select>
+	
+	<select id="findAllDialogExp" resultType="dialogExp">
+		select dae.id, dae.skid, dae.id_ac, dae.cid, dae.stype, dae.answer, dae.state, dae.sort, dae.create_by, dae.create_date, dae.update_by, dae.update_date
+		from DIALOG_ANSWER_EXP dae
+		left join robots r
+		on dae.cid = r.id
+		where dae.state = 1 and r.state = '1' and r.del_flag = '0';
+	</select>
+	
+	<select id="findAllDialogType" resultType="dialogType">
+		select * 
+		from DIALOG_TYPES dt
+		where dt.state= 1 and del_flag = '0' and dt.cid_m is null
+		UNION
+		select dt.id, dt.id_ac, dt.cid_m, dt.atname, dt.be_quoted, dt.is_share, dt.state, dt.sort, dt.remarks, dt.create_by, dt.create_date, dt.update_by, dt.update_date, dt.del_flag
+		from DIALOG_TYPES dt
+		left join robots_module rm
+		on dt.cid_m = rm.cid_m
+		left join robots r
+		on rm.cid = r.id
+		where dt.state= 1 and dt.del_flag = '0' and rm.state = '1' and rm.del_flag = '0' and r.state = '1' and r.del_flag = '0';
+	</select>
+	
+	<select id="findAllAccountWithout" resultType="account">
+		select a.id, a.aname, a.atype, a.isauth, a.authtime, a.state, a.remarks 
+		from ACCOUNT a 
+		where a.state = 1 and a.del_flag = '0' and a.id != #{adminUUID};
+	</select>
+	
+	<select id="findTerminalDialogMore" resultType="terminalDialogMore">
+		select d.id, dmo.nid_d, d.atype, dm.aword, drs.answer, dri.url, 
+			das.scripts, das.stype, das.repara, das.sin, das.sinword, 
+			d2.aword as next_aword, d2.answer as next_answer, d2.url as next_url, 
+			d2.scripts as next_scripts, d2.stype as next_stype, d2.repara as next_repara, d2.sin as next_sin, d2.sinword as next_sinword,  
+			dmo.iword1, dmo.iword1type, dmo.iword1near, dmo.iword1dyna, 
+			dm.aword1, dm.aword1type, dm.aword1near, dm.aword1dyna, dm.aword1para, 
+			dm.aword2, dm.aword2type, dm.aword2near, dm.aword2dyna, dm.aword2para, 
+			dm.aword3, dm.aword3type, dm.aword3near, dm.aword3dyna, dm.aword3para, 
+			dm.aword4, dm.aword4type, dm.aword4near, dm.aword4dyna, dm.aword4para, 
+			dm.aword5, dm.aword5type, dm.aword5near, dm.aword5dyna, dm.aword5para, 
+			d2.aword1 as next_aword1, d2.aword1type as next_aword1type, d2.aword1near as next_aword1near, d2.aword1dyna as next_aword1dyna, d2.aword1para as next_aword1para, 
+			d2.aword2 as next_aword2, d2.aword2type as next_aword2type, d2.aword2near as next_aword2near, d2.aword2dyna as next_aword2dyna, d2.aword2para as next_aword2para, 
+			d2.aword3 as next_aword3, d2.aword3type as next_aword3type, d2.aword3near as next_aword3near, d2.aword3dyna as next_aword3dyna, d2.aword3para as next_aword3para, 
+			d2.aword4 as next_aword4, d2.aword4type as next_aword4type, d2.aword4near as next_aword4near, d2.aword4dyna as next_aword4dyna, d2.aword4para as next_aword4para, 
+			d2.aword5 as next_aword5, d2.aword5type as next_aword5type, d2.aword5near as next_aword5near, d2.aword5dyna as next_aword5dyna, d2.aword5para as next_aword5para 
+		from DIALOG d 
+		left join DIALOG_TYPES dt on d.id_dt = dt.id 
+		left join DIALOG_MAN dm on d.id = dm.id_d 
+		left join DIALOG_MORE dmo on d.id = dmo.id_d 
+		left join DIALOG_ROBOT_STATIC drs on d.id = drs.id_d 
+		left join DIALOG_ROBOT_INTER dri on d.id = dri.id_d 
+		left join DIALOG_ANSWER_SCRIPT das on das.id_d = d.id 
+		left join (
+			select d.id, d.atype, dm.aword, dmo.nid_d, drs.answer, dri.url, 
+				das.scripts, das.stype, das.repara, das.sin, das.sinword, 
+				dm.aword1, dm.aword1type, dm.aword1near, dm.aword1dyna, dm.aword1para, 
+				dm.aword2, dm.aword2type, dm.aword2near, dm.aword2dyna, dm.aword2para, 
+				dm.aword3, dm.aword3type, dm.aword3near, dm.aword3dyna, dm.aword3para, 
+				dm.aword4, dm.aword4type, dm.aword4near, dm.aword4dyna, dm.aword4para, 
+				dm.aword5, dm.aword5type, dm.aword5near, dm.aword5dyna, dm.aword5para
+			from DIALOG d 
+			left join DIALOG_TYPES dt on d.id_dt = dt.id 
+			left join DIALOG_MAN dm on d.id = dm.id_d 
+			left join DIALOG_MORE dmo on d.id = dmo.id_d 
+			left join DIALOG_ROBOT_STATIC drs on d.id = drs.id_d 
+			left join DIALOG_ROBOT_INTER dri on d.id = dri.id_d 
+			left join DIALOG_ANSWER_SCRIPT das on das.id_d = d.id 
+		) d2 on dmo.nid_d = d2.id 
+		where d.atype = 1 and d.del_flag = '0' and d.state = 1 and d.id_dt = #{id_dt};
+	</select>
+
+	<select id="findTerminalDialogInter" resultType="terminalDialogInter">
+		select d.id, d.atype, dm.aword, 
+			dri.url,
+			dm.aword1type, dm.aword1, dm.aword1near, dm.aword1para, dm.aword1dyna, 
+			dm.aword2type, dm.aword2, dm.aword2near, dm.aword2para, dm.aword2dyna, 
+			dm.aword3type, dm.aword3, dm.aword3near, dm.aword3para, dm.aword3dyna, 
+			dm.aword4type, dm.aword4, dm.aword4near, dm.aword4para, dm.aword4dyna, 
+			dm.aword5type, dm.aword5, dm.aword5near, dm.aword5para, dm.aword5dyna,
+			das.scripts, das.stype, das.repara, das.sin, das.sinword 
+		from DIALOG d 
+		left join DIALOG_TYPES dt on d.id_dt = dt.id 
+		left join DIALOG_MAN dm on d.id = dm.id_d 
+		left join DIALOG_ROBOT_INTER dri on d.id = dri.id_d 
+		left join DIALOG_ANSWER_SCRIPT das on das.id_d = d.id 
+		where d.atype = 3 and d.del_flag = '0' and d.state = 1 and d.id_dt = #{id_dt};
+	</select>
+	
+	<select id="findTerminalDialogStatic" resultType="terminalDialogStatic">
+		select d.id as id, d.atype, dm.aword, 
+			drs.answer,
+			dm.aword1type, dm.aword1, dm.aword1near, 
+			dm.aword2type, dm.aword2, dm.aword2near, 
+			dm.aword3type, dm.aword3, dm.aword3near, 
+			dm.aword4type, dm.aword4, dm.aword4near, 
+			dm.aword5type, dm.aword5, dm.aword5near, 
+			das.scripts, das.stype, das.repara, das.sin, das.sinword 
+		from DIALOG d 
+		left join DIALOG_TYPES dt on d.id_dt = dt.id 
+		left join DIALOG_MAN dm on d.id = dm.id_d 
+		left join DIALOG_ROBOT_STATIC drs on d.id = drs.id_d
+		left join DIALOG_ANSWER_SCRIPT das on das.id_d = d.id 
+		where d.atype = 2 and d.del_flag = '0' and d.state = 1 and d.id_dt = #{id_dt};
+	</select>
+	
+	<select id="findDialogMore" resultType="dialogMore">
+		select d.id, dmo.nid_d, d.atype, dm.aword, drs.answer, dri.url, 
+			d2.aword as next_aword, d2.answer as next_answer, d2.url as next_url, 
+			dmo.iword1, dmo.iword1type, dmo.iword1near, dmo.iword1dyna, 
+			dm.aword1, dm.aword1type, dm.aword1near, dm.aword1dyna, dm.aword1para, 
+			dm.aword2, dm.aword2type, dm.aword2near, dm.aword2dyna, dm.aword2para, 
+			dm.aword3, dm.aword3type, dm.aword3near, dm.aword3dyna, dm.aword3para, 
+			dm.aword4, dm.aword4type, dm.aword4near, dm.aword4dyna, dm.aword4para, 
+			dm.aword5, dm.aword5type, dm.aword5near, dm.aword5dyna, dm.aword5para, 
+			d2.aword1 as next_aword1, d2.aword1type as next_aword1type, d2.aword1near as next_aword1near, d2.aword1dyna as next_aword1dyna, d2.aword1para as next_aword1para, 
+			d2.aword2 as next_aword2, d2.aword2type as next_aword2type, d2.aword2near as next_aword2near, d2.aword2dyna as next_aword2dyna, d2.aword2para as next_aword2para, 
+			d2.aword3 as next_aword3, d2.aword3type as next_aword3type, d2.aword3near as next_aword3near, d2.aword3dyna as next_aword3dyna, d2.aword3para as next_aword3para, 
+			d2.aword4 as next_aword4, d2.aword4type as next_aword4type, d2.aword4near as next_aword4near, d2.aword4dyna as next_aword4dyna, d2.aword4para as next_aword4para, 
+			d2.aword5 as next_aword5, d2.aword5type as next_aword5type, d2.aword5near as next_aword5near, d2.aword5dyna as next_aword5dyna, d2.aword5para as next_aword5para 
+		from DIALOG d 
+		left join DIALOG_MAN dm on d.id = dm.id_d 
+		left join DIALOG_MORE dmo on d.id = dmo.id_d 
+		left join DIALOG_ROBOT_STATIC drs on d.id = drs.id_d 
+		left join DIALOG_ROBOT_INTER dri on d.id = dri.id_d 
+		left join (
+			select d.id, d.atype, dm.aword, dmo.nid_d, drs.answer, dri.url, 
+				dm.aword1, dm.aword1type, dm.aword1near, dm.aword1dyna, dm.aword1para, 
+				dm.aword2, dm.aword2type, dm.aword2near, dm.aword2dyna, dm.aword2para, 
+				dm.aword3, dm.aword3type, dm.aword3near, dm.aword3dyna, dm.aword3para, 
+				dm.aword4, dm.aword4type, dm.aword4near, dm.aword4dyna, dm.aword4para, 
+				dm.aword5, dm.aword5type, dm.aword5near, dm.aword5dyna, dm.aword5para
+			from DIALOG d 
+			left join DIALOG_MAN dm on d.id = dm.id_d 
+			left join DIALOG_MORE dmo on d.id = dmo.id_d 
+			left join DIALOG_ROBOT_STATIC drs on d.id = drs.id_d 
+			left join DIALOG_ROBOT_INTER dri on d.id = dri.id_d 
+		) d2 on dmo.nid_d = d2.id 
+		where d.atype = 1 and d.del_flag = '0' and d.state = 1 and d.id_ac = #{id_ac};
+	</select>
+
+	<select id="findDialogInter" resultType="dialogInter">
+		select d.id, d.atype, dm.aword, 
+			dri.url,
+			dm.aword1type, dm.aword1, dm.aword1near, dm.aword1para, dm.aword1dyna, 
+			dm.aword2type, dm.aword2, dm.aword2near, dm.aword2para, dm.aword2dyna, 
+			dm.aword3type, dm.aword3, dm.aword3near, dm.aword3para, dm.aword3dyna, 
+			dm.aword4type, dm.aword4, dm.aword4near, dm.aword4para, dm.aword4dyna, 
+			dm.aword5type, dm.aword5, dm.aword5near, dm.aword5para, dm.aword5dyna 
+		from DIALOG d 
+		left join DIALOG_MAN dm on d.id = dm.id_d 
+		left join DIALOG_ROBOT_INTER dri on d.id = dri.id_d 
+		where d.atype = 3 and d.del_flag = '0' and d.state = 1 and d.id_ac = #{id_ac};
+	</select>
+	
+	<select id="findDialogStatic" resultType="dialogStatic">
+		select d.id as id, d.atype, dm.aword, 
+			drs.answer,
+			dm.aword1type, dm.aword1, dm.aword1near, 
+			dm.aword2type, dm.aword2, dm.aword2near, 
+			dm.aword3type, dm.aword3, dm.aword3near, 
+			dm.aword4type, dm.aword4, dm.aword4near, 
+			dm.aword5type, dm.aword5, dm.aword5near 
+		from DIALOG d 
+		left join DIALOG_MAN dm on d.id = dm.id_d 
+		left join DIALOG_ROBOT_STATIC drs on d.id = drs.id_d
+		where d.atype = 2 and d.del_flag = '0' and d.state = 1 and d.id_ac = #{id_ac};
+	</select>
+
+	<select id="findAll" resultType="dialogCache">
+		select d.id as that_id, 
+			dm.aword1 as that_k1, dm.aword1type as that_k1type, dm.aword1near as that_k1near, dm.aword1dyna as that_k1dyna, dm.aword1para as that_k1para, 
+			dm.aword2 as that_k2, dm.aword2type as that_k2type, dm.aword2near as that_k2near, dm.aword2dyna as that_k2dyna, dm.aword2para as that_k2para, 
+			dm.aword3 as that_k3, dm.aword3type as that_k3type, dm.aword3near as that_k3near, dm.aword3dyna as that_k3dyna, dm.aword3para as that_k3para, 
+			dm.aword4 as that_k4, dm.aword4type as that_k4type, dm.aword4near as that_k4near, dm.aword4dyna as that_k4dyna, dm.aword4para as that_k4para, 
+			dm.aword5 as that_k5, dm.aword5type as that_k5type, dm.aword5near as that_k5near, dm.aword5dyna as that_k5dyna, dm.aword5para as that_k5para, 
+			dri.url as that_url, drs.answer as that_answer, 
+			d2.id as id, 
+			d2.aword1 as k1, d2.aword1type as k1type, d2.aword1near as k1near, d2.aword1dyna as k1dyna, d2.aword1para as k1para, 
+			d2.aword2 as k2, d2.aword2type as k2type, d2.aword1near as k2near, d2.aword2dyna as k2dyna, d2.aword2para as k2para, 
+			d2.aword3 as k3, d2.aword3type as k3type, d2.aword1near as k3near, d2.aword3dyna as k3dyna, d2.aword3para as k3para, 
+			d2.aword4 as k4, d2.aword4type as k4type, d2.aword1near as k4near, d2.aword4dyna as k4dyna, d2.aword4para as k4para, 
+			d2.aword5 as k5, d2.aword5type as k5type, d2.aword1near as k5near, d2.aword5dyna as k5dyna, d2.aword5para as k5para, 
+			d2.url as url, d2.answer as answer
+		from DIALOG d 
+		left join DIALOG_MAN dm on d.id = dm.id_d 
+		left join DIALOG_MORE dmo on d.id = dmo.id_d 
+		left join DIALOG_ROBOT_INTER dri on d.id = dri.id_d
+		left join DIALOG_ROBOT_STATIC drs on d.id = drs.id_d
+		right join (
+			select d.id, 
+				dm.aword1, dm.aword1type, dm.aword1near, dm.aword1dyna, dm.aword1para, 
+				dm.aword2, dm.aword2type, dm.aword2near, dm.aword2dyna, dm.aword2para, 
+				dm.aword3, dm.aword3type, dm.aword3near, dm.aword3dyna, dm.aword3para, 
+				dm.aword4, dm.aword4type, dm.aword4near, dm.aword4dyna, dm.aword4para, 
+				dm.aword5, dm.aword5type, dm.aword5near, dm.aword5dyna, dm.aword5para, 
+				dri.url, drs.answer, 
+				dmo.nid_d
+			from DIALOG d 
+			left join DIALOG_MAN dm on d.id = dm.id_d 
+			left join DIALOG_MORE dmo on d.id = dmo.id_d 
+			left join DIALOG_ROBOT_INTER dri on d.id = dri.id_d
+			left join DIALOG_ROBOT_STATIC drs on d.id = drs.id_d
+		) d2 on dmo.nid_d = d2.id;
+	</select>
+	
+	<select id="findAllDialogMan" resultType="dialogMan">
+		select d.id_dt, dm.id_d, dm.aword, dm.awordnum, d.atype, dm.aptype, 
+		dm.aword1type, dm.aword1, dm.aword1near, dm.aword1dyna, dm.aword1para, 
+		dm.aword2type, dm.aword2, dm.aword2near, dm.aword2dyna, dm.aword2para, 
+		dm.aword3type, dm.aword3, dm.aword3near, dm.aword3dyna, dm.aword3para, 
+		dm.aword4type, dm.aword4, dm.aword4near, dm.aword4dyna, dm.aword4para, 
+		dm.aword5type, dm.aword5, dm.aword5near, dm.aword5dyna, dm.aword5para 
+		from DIALOG_MAN dm 
+		left join DIALOG d on d.id = dm.id_d
+		where d.del_flag = 0 and dm.aptype = 2 and d.id_dt = #{id_dt}
+	</select>
+	
+	<select id="findAllDialog" resultType="dialog">
+		SELECT * FROM DIALOG d"
+	</select>
+
+	<insert id="insertDialog">
+		insert into DIALOG(id, id_dt, atype, state, sort, remarks, create_by, create_date, update_by, update_date, del_flag)
+		values(#{id}, #{id_dt}, #{atype}, #{state}, #{sort}, #{remarks}, #{create_by}, #{create_date}, #{update_by}, #{update_date}, #{del_flag})
+	</insert>
+
+</mapper>
